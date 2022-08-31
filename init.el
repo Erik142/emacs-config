@@ -5,7 +5,7 @@
 (tool-bar-mode -1)
 (tooltip-mode -1)
 (menu-bar-mode -1)
-(setq visible-bell t)
+(setq visible-bell nil)
 
 (set-face-attribute 'default nil :font "FiraCode NF" :height 120)
 
