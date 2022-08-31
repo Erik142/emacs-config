@@ -9,7 +9,7 @@
 
 (set-face-attribute 'default nil :font "FiraCode NF" :height 120)
 
-(load-theme 'doom-gruvbox)
+(load-theme 'doom-gruvbox t)
 
 ;; Initialize package sources
 (require 'package)
