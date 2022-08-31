@@ -118,6 +118,21 @@
 (key-chord-define evil-insert-state-map "kj" 'evil-normal-state)
 (key-chord-mode 1)
 (use-package hydra)
+(use-package projectile
+    :diminish projectile-mode
+    :config (projectile-mode)
+    :custom ((projectile-completion-system 'ivy))
+    :bind-keymap
+    ("C-c p" . projectile-command-map)
+    :init
+    (when (file-directory-p "~/Projekt")
+	    (setq projectile-project-search-path '("~/Projekt")))
+    (setq projectile-switch-project-action #'projectile-dired))
+(use-package counsel-projectile
+  :config (counsel-projectile-mode))
+(use-package magit
+  :custom
+  (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1))
 
 ;; Line numbers
 (column-number-mode)
