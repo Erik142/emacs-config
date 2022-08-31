@@ -111,6 +111,12 @@
 		:keymaps '(normal insert visual emacs)
 		:prefix "SPC"
 		:global-prefix "C-SPC"))
+(use-package key-chord)
+;;Exit insert mode by pressing j and k quickly
+(setq key-chord-two-keys-delay 0.2)
+(key-chord-define evil-insert-state-map "jk" 'evil-normal-state)
+(key-chord-define evil-insert-state-map "kj" 'evil-normal-state)
+(key-chord-mode 1)
 (use-package hydra)
 
 ;; Line numbers
