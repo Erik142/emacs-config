@@ -8,8 +8,7 @@
 (setq visible-bell nil)
 
 (set-face-attribute 'default nil :font "FiraCode NF" :height 120)
-
-(load-theme 'doom-gruvbox t)
+(electric-pair-mode)
 
 ;; Initialize package sources
 (require 'package)
@@ -32,36 +31,57 @@
 ;; Make ESC quit prompts
 (global-set-key (kbd "<escape>") 'keyboard-escape-quit)
 
+(setq split-window-preferred-function 'ew/split-window-func)
+(defun ew/split-window-func (&optional window)
+  (let ((new-window (split-window-sensibly window)))
+    (if (not (active-minibuffer-window))
+        (select-window new-window))))
+
 ;; Packages
-(use-package command-log-mode)
-(use-package counsel
-	:bind (("M-x" . counsel-M-x)
-	("C-x b" . counsel-ibuffer)
-	("C-x C-f" . counsel-find-file)
-	:map minibuffer-local-map
-	("C-r" . counsel-minibuffer-history)))
-(use-package ivy
-	:diminish
-	:bind (("C-s" . swiper)
-	:map ivy-minibuffer-map
-	("TAB" . ivy-alt-done)
-	("C-l" . ivy-alt-done)
-	("C-j" . ivy-next-line)
-	("C-k" . ivy-previous-line)
-	:map ivy-switch-buffer-map
-	("C-k" . ivy-previous-line)
-	("C-l" . ivy-done)
-	("C-d" . ivy-switch-buffer-kill)
-	:map ivy-reverse-i-search-map
-	("C-k" . ivy-previous-line)
-	("C-d" . ivy-reverse-i-search-kill))
-	:config
-	(ivy-mode 1))
+(use-package vertico
+  :init
+  (vertico-mode))
+(use-package savehist
+  :init
+  (savehist-mode))
+(use-package orderless
+  :init
+  ;; Configure a custom style dispatcher (see the Consult wiki)
+  ;; (setq orderless-style-dispatchers '(+orderless-dispatch)
+  ;;       orderless-component-separator #'orderless-escapable-split-on-space)
+  (setq completion-styles '(orderless basic)
+        completion-category-defaults nil
+        completion-category-overrides '((file (styles partial-completion)))))
+(use-package marginalia
+  ;; Either bind `marginalia-cycle' globally or only in the minibuffer
+  :bind (("M-A" . marginalia-cycle)
+         :map minibuffer-local-map
+         ("M-A" . marginalia-cycle))
+  :init
+  (marginalia-mode))
+(use-package consult
+  :hook (completion-list-mode . consult-preview-at-point-mode)
+  :init
+  (setq register-preview-delay 0.5
+    register-preview-function #'consult-register-format)
+  (advice-add #'register-preview :override #'consult-register-window)
+  (setq xref-show-xrefs-function #'consult-xref
+    xref-show-definitions-function #'consult-xref))
+(use-package consult-dir
+:bind (("C-x C-d" . consult-dir)
+         :map vertico-map
+         ("C-x C-d" . consult-dir)
+         ("C-x C-j" . consult-dir-jump-file)))
+(use-package consult-project-extra
+  :ensure t)
 (use-package doom-modeline
   :ensure t
   :init (doom-modeline-mode 1)
 	:custom ((doom-modeline-height 30)))
 (use-package doom-themes)
+
+(load-theme 'doom-gruvbox t)
+
 (use-package all-the-icons
   :if (display-graphic-p)
     :ensure t)
@@ -72,19 +92,9 @@
     :diminish which-key-mode
     :config
     (setq which-key-idle-delay 0))
-(use-package ivy-rich
-    :init
-    (ivy-rich-mode 1))
 (use-package helpful
-  :commands (helpful-callable helpful-variable helpful-command helpful-key)
-  :custom
-  (counsel-describe-function-function #'helpful-callable)
-  (counsel-describe-variable-function #'helpful-variable)
-  :bind
-  ([remap describe-function] . counsel-describe-function)
-  ([remap describe-command] . helpful-command)
-  ([remap describe-variable] . counsel-describe-variable)
-  ([remap describe-key] . helpful-key))
+  :commands (helpful-callable helpful-variable helpful-command helpful-key))
+  
 (use-package evil
   :init
   (setq evil-want-integration t)
@@ -105,12 +115,7 @@
   :after evil
   :config
   (evil-collection-init))
-(use-package general
-    :config
-    (general-create-definer ew/leader-keys
-	:keymaps '(normal insert visual emacs)
-	:prefix "SPC"
-	:global-prefix "C-SPC"))
+
 (use-package key-chord)
 ;;Exit insert mode by pressing j and k quickly
 (setq key-chord-two-keys-delay 0.2)
@@ -118,21 +123,114 @@
 (key-chord-define evil-insert-state-map "kj" 'evil-normal-state)
 (key-chord-mode 1)
 (use-package hydra)
-(use-package projectile
-    :diminish projectile-mode
-    :config (projectile-mode)
-    :custom ((projectile-completion-system 'ivy))
-    :bind-keymap
-    ("C-c p" . projectile-command-map)
-    :init
-    (when (file-directory-p "~/Projekt")
-	    (setq projectile-project-search-path '("~/Projekt")))
-    (setq projectile-switch-project-action #'projectile-dired))
-(use-package counsel-projectile
-  :config (counsel-projectile-mode))
+(use-package rg)
 (use-package magit
   :custom
   (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1))
+(use-package org)
+
+(defun efs/lsp-mode-setup ()
+  (setq lsp-headerline-breadcrumb-segments '(path-up-to-project file symbols))
+  (lsp-headerline-breadcrumb-mode))
+
+(use-package lsp-mode
+  :commands (lsp lsp-deferred)
+  :hook (lsp-mode . efs/lsp-mode-setup)
+  :init
+  ;;(setq lsp-keymap-prefix "C-c l")  ;; Or 'C-l', 's-l'
+  :config
+  (lsp-enable-which-key-integration t))
+
+(use-package lsp-ui
+  :hook (lsp-mode . lsp-ui-mode)
+  :custom
+  (lsp-ui-doc-position 'bottom))
+
+(use-package popper
+  :ensure t ; or :straight t
+  :init
+  (setq popper-reference-buffers
+        '("\\*Messages\\*"
+          "Output\\*$"
+          "\\*Async Shell Command\\*"
+          "\\*lsp-log\\*"
+          "\\*Warnings\\*"))
+  (popper-mode +1)
+  (popper-echo-mode +1))
+
+(use-package general
+    :config
+    (general-create-definer ew/leader-keys
+        :states '(normal treemacs)
+	:keymaps 'override
+	:prefix "SPC"
+	:global-prefix "C-SPC")
+    (ew/leader-keys
+      "b" '(:ignore t :which-key "Buffers")
+      "bs" '(consult-buffer :which-key "Switch buffer")
+      "f" '(:ignore t :which-key "Find")
+      "fd" '(consult-dir :which-key "Find directory")
+      "fp" '(consult-project-extra-find :which-key "Find all project related entities")
+      "g" '(:ignore t :which-key "Git")
+      "gg" '(magit-status :which-key "Open magit")
+      "e" '(project-dired :which-key "Toggle dired")
+      "h" '(help-command :which-key "Help")
+      "m" '(:ignore t :which-key "Minibuffers")
+      "mm" '(popper-toggle-latest :which-key "Toggle Popper")
+      "mc" '(popper-cycle :which-key "Cycle Popper buffers")
+      "mt" '(popper-toggle-type :which-key "Toggle Popper Types")
+      "p" '(:ignore t :which-key "Projects")
+      "pS" '(ew/search-projects :which-key "Scan for new projects")
+      "ps" '(project-switch-project :which-key "Switch to project")
+      "s" '(:ignore t :which-key "Splits")
+      "sv" '(split-window-right :which-key "Split vertically")
+      "sh" '(split-window-below :which-key "Split horizontally")))
+
+(setq ew/search-project-dirs '("~/Projekt"))
+(setq ew/search-project-qualifiers '(".git"))
+
+(defun ew/search-projects ()
+    (message "Hello from my search function!"))
+
+(use-package bufler)
+
+(general-define-key
+ :states '(normal treemacs)
+ :keymaps '(override emacs treemacs)
+ "C-h" 'windmove-left
+ "C-l" 'windmove-right
+ "C-j" 'windmove-down
+ "C-k" 'windmove-up
+ "H" 'tab-next
+ "L" 'tab-previous
+ "gcc" 'evilnc-comment-or-uncomment-lines)
+
+(use-package company
+  :after lsp-mode
+  :hook (lsp-mode . company-mode)
+  :bind (:map company-active-map
+         ("<tab>" . company-complete-selection))
+        (:map lsp-mode-map
+         ("<tab>" . company-indent-or-complete-common))
+  :custom
+  (company-minimum-prefix-length 1)
+  (company-idle-delay 0.0))
+
+(use-package company-box
+  :hook (company-mode . company-box-mode))
+
+(use-package lsp-java :config (add-hook 'java-mode-hook 'lsp))
+
+(use-package evil-nerd-commenter)
+
+;; Language modes
+(use-package typescript-mode
+  :mode "\\.ts\\'"
+  :hook (typescript-mode . lsp-deferred)
+  :config
+  (setq typescript-indent-level 2))
+
+
 
 ;; Line numbers
 (column-number-mode)
@@ -143,5 +241,19 @@
 (dolist (mode '(org-mode-hook
 	    term-mode-hook
 	    shell-mode-hook
-	    eshell-mode-hook))
+	    eshell-mode-hook
+	    treemacs-mode-hook))
     (add-hook mode (lambda () (display-line-numbers-mode 0))))
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(package-selected-packages
+   '(project-tab-groups bufler sideline-blame evil-nerd-commenter lsp-java company-box company typescript-mode centaur-tabs general popper lsp-ui lsp-mode magit rg hydra key-chord evil-collection evil helpful which-key rainbow-delimiters all-the-icons doom-themes doom-modeline consult-project-extra consult-dir consult marginalia orderless vertico use-package)))
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ )
