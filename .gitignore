@@ -1,1 +1,12 @@
+.cache/
+auto-save-list/
 elpa/
+transient/
+workspace/
+
+.dap-breakpoints
+.lsp-session-v1
+history
+init.el~
+projectile-bookmarks.eld
+projects
