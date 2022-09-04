@@ -229,8 +229,25 @@
   :hook (typescript-mode . lsp-deferred)
   :config
   (setq typescript-indent-level 2))
-
-
+(use-package yaml-mode)
+(use-package dockerfile-mode)
+(use-package cmake-mode)
+(use-package go-mode)
+(use-package python-mode)
+(use-package json-mode)
+(use-package fish-mode)
+(use-package ansible)
+(use-package graphql-mode)
+(use-package rust-mode)
+(use-package cargo-mode)
+(use-package toml-mode)
+(use-package tree-sitter
+  :config
+  (global-tree-sitter-mode))
+(add-hook 'tree-sitter-after-on-hook #'tree-sitter-hl-mode)
+(use-package tree-sitter-langs)
+(add-hook 'c++-mode-hook 'lsp)
+(add-hook 'c-mode-hook 'lsp)
 
 ;; Line numbers
 (column-number-mode)
@@ -241,8 +258,7 @@
 (dolist (mode '(org-mode-hook
 	    term-mode-hook
 	    shell-mode-hook
-	    eshell-mode-hook
-	    treemacs-mode-hook))
+	    eshell-mode-hook))
     (add-hook mode (lambda () (display-line-numbers-mode 0))))
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
@@ -250,7 +266,7 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
-   '(project-tab-groups bufler sideline-blame evil-nerd-commenter lsp-java company-box company typescript-mode centaur-tabs general popper lsp-ui lsp-mode magit rg hydra key-chord evil-collection evil helpful which-key rainbow-delimiters all-the-icons doom-themes doom-modeline consult-project-extra consult-dir consult marginalia orderless vertico use-package)))
+   '(toml-mode cargo-mode rust-mode graphql-mode ansible fish-mode tree-sitter-langs json-mode go-mode python-mode cmake-mode dockerfile-mode yaml-mode project-tab-groups bufler sideline-blame evil-nerd-commenter lsp-java company-box company typescript-mode centaur-tabs general popper lsp-ui lsp-mode magit rg hydra key-chord evil-collection evil helpful which-key rainbow-delimiters all-the-icons doom-themes doom-modeline consult-project-extra consult-dir consult marginalia orderless vertico use-package)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
