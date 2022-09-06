@@ -1,4 +1,3 @@
-;; Basic settings
 (setq inhibit-startup-message t)
 
 (scroll-bar-mode -1)
@@ -8,14 +7,8 @@
 (setq visible-bell nil)
 
 (set-face-attribute 'default nil :font "FiraCode NF" :height 120)
+
 (electric-pair-mode)
-
-;; Initialize package sources
-(require 'package)
-
-(setq package-archives '(("melpa" . "https://melpa.org/packages/")
-		         ("org" . "https://orgmode.org/elpa/")
-			 ("elpa" . "https://elpa.gnu.org/packages/")))
 
 (package-initialize)
 (unless package-archive-contents
@@ -28,16 +21,6 @@
 (require 'use-package)
 (setq use-package-always-ensure t)
 
-;; Make ESC quit prompts
-(global-set-key (kbd "<escape>") 'keyboard-escape-quit)
-
-(setq split-window-preferred-function 'ew/split-window-func)
-(defun ew/split-window-func (&optional window)
-  (let ((new-window (split-window-sensibly window)))
-    (if (not (active-minibuffer-window))
-        (select-window new-window))))
-
-;; Packages
 (use-package vertico
   :init
   (vertico-mode))
@@ -65,7 +48,7 @@
   (setq register-preview-delay 0.5
     register-preview-function #'consult-register-format)
   (advice-add #'register-preview :override #'consult-register-window)
-  (setq xref-show-xrefs-function #'consult-xref
+  (setq xref-show-xrew-function #'consult-xref
     xref-show-definitions-function #'consult-xref))
 (use-package consult-dir
 :bind (("C-x C-d" . consult-dir)
@@ -74,27 +57,40 @@
          ("C-x C-j" . consult-dir-jump-file)))
 (use-package consult-project-extra
   :ensure t)
+
 (use-package doom-modeline
-  :ensure t
-  :init (doom-modeline-mode 1)
-	:custom ((doom-modeline-height 30)))
-(use-package doom-themes)
+      :ensure t
+      :init (doom-modeline-mode 1)
+	    :custom ((doom-modeline-height 30)))
+    (use-package doom-themes)
+
+    (load-theme 'doom-gruvbox t)
+
+    (use-package all-the-icons
+      :if (display-graphic-p)
+	:ensure t)
+    (use-package rainbow-delimiters
+	:hook (prog-mode . rainbow-delimiters-mode))
 
 (load-theme 'doom-gruvbox t)
 
-(use-package all-the-icons
-  :if (display-graphic-p)
-    :ensure t)
-(use-package rainbow-delimiters
-    :hook (prog-mode . rainbow-delimiters-mode))
 (use-package which-key
     :init (which-key-mode)
     :diminish which-key-mode
     :config
     (setq which-key-idle-delay 0))
+
 (use-package helpful
   :commands (helpful-callable helpful-variable helpful-command helpful-key))
-  
+
+(setq split-window-preferred-function 'ew/split-window-func)
+(defun ew/split-window-func (&optional window)
+  (let ((new-window (split-window-sensibly window)))
+    (if (not (active-minibuffer-window))
+        (select-window new-window))))
+
+(global-set-key (kbd "<escape>") 'keyboard-escape-quit)
+
 (use-package evil
   :init
   (setq evil-want-integration t)
@@ -122,29 +118,47 @@
 (key-chord-define evil-insert-state-map "jk" 'evil-normal-state)
 (key-chord-define evil-insert-state-map "kj" 'evil-normal-state)
 (key-chord-mode 1)
-(use-package hydra)
-(use-package rg)
-(use-package magit
-  :custom
-  (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1))
-(use-package org)
 
-(defun efs/lsp-mode-setup ()
-  (setq lsp-headerline-breadcrumb-segments '(path-up-to-project file symbols))
-  (lsp-headerline-breadcrumb-mode))
+(use-package general
+    :config
+      (general-create-definer ew/leader-keys
+          :states 'normal
+          :keymaps 'override
+          ;; :prefix "SPC"
+          :global-prefix "SPC")
+      (ew/leader-keys
+      "b" '(:ignore t :which-key "Buffers")
+      "bs" '(consult-buffer :which-key "Switch buffer")
+      "f" '(:ignore t :which-key "Find")
+      "fd" '(consult-dir :which-key "Find directory")
+      "fp" '(consult-project-extra-find :which-key "Find all project related entities")
+      "g" '(:ignore t :which-key "Git")
+      "gg" '(magit-status :which-key "Open magit")
+      "e" '(project-dired :which-key "Toggle dired")
+      "h" '(help-command :which-key "Help")
+      "l" '(#'lsp-command-map :which-key "Lsp")
+      "m" '(:ignore t :which-key "Minibuffers")
+      "mm" '(popper-toggle-latest :which-key "Toggle Popper")
+      "mc" '(popper-cycle :which-key "Cycle Popper buffers")
+      "mt" '(popper-toggle-type :which-key "Toggle Popper Types")
+      "p" '(:ignore t :which-key "Projects")
+      "ps" '(project-switch-project :which-key "Switch to project")
+      "S" '(:ignore t :which-key "Snippets")
+      "Si" '(yas-insert-snippet :which-key "Insert snippet")
+      "s" '(:ignore t :which-key "Splits")
+      "sv" '(split-window-right :which-key "Split vertically")
+      "sh" '(split-window-below :which-key "Split horizontally")))
 
-(use-package lsp-mode
-  :commands (lsp lsp-deferred)
-  :hook (lsp-mode . efs/lsp-mode-setup)
-  :init
-  ;;(setq lsp-keymap-prefix "C-c l")  ;; Or 'C-l', 's-l'
-  :config
-  (lsp-enable-which-key-integration t))
-
-(use-package lsp-ui
-  :hook (lsp-mode . lsp-ui-mode)
-  :custom
-  (lsp-ui-doc-position 'bottom))
+(general-define-key
+ :states 'normal
+ :keymaps '(override emacs)
+ "C-h" 'windmove-left
+ "C-l" 'windmove-right
+ "C-j" 'windmove-down
+ "C-k" 'windmove-up
+ "H" 'tab-next
+ "L" 'tab-previous
+ "gcc" 'evilnc-comment-or-uncomment-lines)
 
 (use-package popper
   :ensure t ; or :straight t
@@ -158,52 +172,181 @@
   (popper-mode +1)
   (popper-echo-mode +1))
 
-(use-package general
-    :config
-    (general-create-definer ew/leader-keys
-        :states '(normal treemacs)
-	:keymaps 'override
-	:prefix "SPC"
-	:global-prefix "C-SPC")
-    (ew/leader-keys
-      "b" '(:ignore t :which-key "Buffers")
-      "bs" '(consult-buffer :which-key "Switch buffer")
-      "f" '(:ignore t :which-key "Find")
-      "fd" '(consult-dir :which-key "Find directory")
-      "fp" '(consult-project-extra-find :which-key "Find all project related entities")
-      "g" '(:ignore t :which-key "Git")
-      "gg" '(magit-status :which-key "Open magit")
-      "e" '(project-dired :which-key "Toggle dired")
-      "h" '(help-command :which-key "Help")
-      "m" '(:ignore t :which-key "Minibuffers")
-      "mm" '(popper-toggle-latest :which-key "Toggle Popper")
-      "mc" '(popper-cycle :which-key "Cycle Popper buffers")
-      "mt" '(popper-toggle-type :which-key "Toggle Popper Types")
-      "p" '(:ignore t :which-key "Projects")
-      "pS" '(ew/search-projects :which-key "Scan for new projects")
-      "ps" '(project-switch-project :which-key "Switch to project")
-      "s" '(:ignore t :which-key "Splits")
-      "sv" '(split-window-right :which-key "Split vertically")
-      "sh" '(split-window-below :which-key "Split horizontally")))
+(use-package hydra)
 
-(setq ew/search-project-dirs '("~/Projekt"))
-(setq ew/search-project-qualifiers '(".git"))
+(use-package rg)
 
-(defun ew/search-projects ()
-    (message "Hello from my search function!"))
+(use-package magit
+  :custom
+  (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1))
 
-(use-package bufler)
+(defun ew/org-mode-setup ()
+  (org-indent-mode)
+  (visual-line-mode 1))
 
-(general-define-key
- :states '(normal treemacs)
- :keymaps '(override emacs treemacs)
- "C-h" 'windmove-left
- "C-l" 'windmove-right
- "C-j" 'windmove-down
- "C-k" 'windmove-up
- "H" 'tab-next
- "L" 'tab-previous
- "gcc" 'evilnc-comment-or-uncomment-lines)
+(use-package org
+  :hook (org-mode . ew/org-mode-setup)
+  :config
+  (setq org-ellipsis " ▾")
+
+  (setq org-agenda-start-with-log-mode t)
+  (setq org-log-done 'time)
+  (setq org-log-into-drawer t)
+
+  (setq org-agenda-files
+        '("~/Projects/Code/emacs-from-scratch/OrgFiles/Tasks.org"
+          "~/Projects/Code/emacs-from-scratch/OrgFiles/Habits.org"
+          "~/Projects/Code/emacs-from-scratch/OrgFiles/Birthdays.org"))
+
+  (require 'org-habit)
+  (add-to-list 'org-modules 'org-habit)
+  (setq org-habit-graph-column 60)
+
+  (setq org-todo-keywords
+    '((sequence "TODO(t)" "NEXT(n)" "|" "DONE(d!)")
+      (sequence "BACKLOG(b)" "PLAN(p)" "READY(r)" "ACTIVE(a)" "REVIEW(v)" "WAIT(w@/!)" "HOLD(h)" "|" "COMPLETED(c)" "CANC(k@)")))
+
+  (setq org-refile-targets
+    '(("Archive.org" :maxlevel . 1)
+      ("Tasks.org" :maxlevel . 1)))
+
+  ;; Save Org buffers after refiling!
+  (advice-add 'org-refile :after 'org-save-all-org-buffers)
+
+  (setq org-tag-alist
+    '((:startgroup)
+       ; Put mutually exclusive tags here
+       (:endgroup)
+       ("@errand" . ?E)
+       ("@home" . ?H)
+       ("@work" . ?W)
+       ("agenda" . ?a)
+       ("planning" . ?p)
+       ("publish" . ?P)
+       ("batch" . ?b)
+       ("note" . ?n)
+       ("idea" . ?i)))
+
+  ;; Configure custom agenda views
+  (setq org-agenda-custom-commands
+   '(("d" "Dashboard"
+     ((agenda "" ((org-deadline-warning-days 7)))
+      (todo "NEXT"
+        ((org-agenda-overriding-header "Next Tasks")))
+      (tags-todo "agenda/ACTIVE" ((org-agenda-overriding-header "Active Projects")))))
+
+    ("n" "Next Tasks"
+     ((todo "NEXT"
+        ((org-agenda-overriding-header "Next Tasks")))))
+
+    ("W" "Work Tasks" tags-todo "+work-email")
+
+    ;; Low-effort next actions
+    ("e" tags-todo "+TODO=\"NEXT\"+Effort<15&+Effort>0"
+     ((org-agenda-overriding-header "Low Effort Tasks")
+      (org-agenda-max-todos 20)
+      (org-agenda-files org-agenda-files)))
+
+    ("w" "Workflow Status"
+     ((todo "WAIT"
+            ((org-agenda-overriding-header "Waiting on External")
+             (org-agenda-files org-agenda-files)))
+      (todo "REVIEW"
+            ((org-agenda-overriding-header "In Review")
+             (org-agenda-files org-agenda-files)))
+      (todo "PLAN"
+            ((org-agenda-overriding-header "In Planning")
+             (org-agenda-todo-list-sublevels nil)
+             (org-agenda-files org-agenda-files)))
+      (todo "BACKLOG"
+            ((org-agenda-overriding-header "Project Backlog")
+             (org-agenda-todo-list-sublevels nil)
+             (org-agenda-files org-agenda-files)))
+      (todo "READY"
+            ((org-agenda-overriding-header "Ready for Work")
+             (org-agenda-files org-agenda-files)))
+      (todo "ACTIVE"
+            ((org-agenda-overriding-header "Active Projects")
+             (org-agenda-files org-agenda-files)))
+      (todo "COMPLETED"
+            ((org-agenda-overriding-header "Completed Projects")
+             (org-agenda-files org-agenda-files)))
+      (todo "CANC"
+            ((org-agenda-overriding-header "Cancelled Projects")
+             (org-agenda-files org-agenda-files)))))))
+
+  (setq org-capture-templates
+    `(("t" "Tasks / Projects")
+      ("tt" "Task" entry (file+olp "~/Projects/Code/emacs-from-scratch/OrgFiles/Tasks.org" "Inbox")
+           "* TODO %?\n  %U\n  %a\n  %i" :empty-lines 1)
+
+      ("j" "Journal Entries")
+      ("jj" "Journal" entry
+           (file+olp+datetree "~/Projects/Code/emacs-from-scratch/OrgFiles/Journal.org")
+           "\n* %<%I:%M %p> - Journal :journal:\n\n%?\n\n"
+           ;; ,(dw/read-file-as-string "~/Notes/Templates/Daily.org")
+           :clock-in :clock-resume
+           :empty-lines 1)
+      ("jm" "Meeting" entry
+           (file+olp+datetree "~/Projects/Code/emacs-from-scratch/OrgFiles/Journal.org")
+           "* %<%I:%M %p> - %a :meetings:\n\n%?\n\n"
+           :clock-in :clock-resume
+           :empty-lines 1)
+
+      ("w" "Workflows")
+      ("we" "Checking Email" entry (file+olp+datetree "~/Projects/Code/emacs-from-scratch/OrgFiles/Journal.org")
+           "* Checking Email :email:\n\n%?" :clock-in :clock-resume :empty-lines 1)
+
+      ("m" "Metrics Capture")
+      ("mw" "Weight" table-line (file+headline "~/Projects/Code/emacs-from-scratch/OrgFiles/Metrics.org" "Weight")
+       "| %U | %^{Weight} | %^{Notes} |" :kill-buffer t)))
+
+  (define-key global-map (kbd "C-c j")
+    (lambda () (interactive) (org-capture nil "jj"))))
+
+(use-package org-superstar
+  :after org
+  :hook (org-mode . org-superstar-mode)
+  :custom
+  (org-superstar-headline-bullet-list '("◉" "○" "●" "○" "●" "○" "●")))
+
+(require 'org-tempo)
+
+(add-to-list 'org-structure-template-alist '("sh" . "src shell"))
+(add-to-list 'org-structure-template-alist '("el" . "src emacs-lisp"))
+(add-to-list 'org-structure-template-alist '("py" . "src python"))
+
+;; Automatically tangle our Emacs.org config file when we save it
+(defun ew/org-babel-tangle-config ()
+  (when (string-equal (file-name-directory (buffer-file-name))
+                      (expand-file-name user-emacs-directory))
+    ;; Dynamic scoping to the rescue
+    (let ((org-confirm-babel-evaluate nil))
+      (org-babel-tangle))))
+
+(add-hook 'org-mode-hook (lambda () (add-hook 'after-save-hook #'ew/org-babel-tangle-config)))
+
+(defun ew/lsp-mode-setup ()
+  (setq lsp-headerline-breadcrumb-segments '(path-up-to-project file symbols))
+  (lsp-headerline-breadcrumb-mode))
+
+(use-package lsp-mode
+  :commands (lsp lsp-deferred)
+  :hook (lsp-mode . ew/lsp-mode-setup)
+  :init
+  (setq lsp-keymap-prefix "SPC i")  ;; Or 'C-l', 's-l'
+  :config
+  (lsp-enable-which-key-integration t))
+
+(use-package lsp-ui
+  :hook (lsp-mode . lsp-ui-mode)
+  :custom
+  (lsp-ui-doc-position 'bottom))
+
+(use-package lsp-ui
+  :hook (lsp-mode . lsp-ui-mode)
+  :custom
+  (lsp-ui-doc-position 'bottom))
 
 (use-package company
   :after lsp-mode
@@ -221,9 +364,15 @@
 
 (use-package lsp-java :config (add-hook 'java-mode-hook 'lsp))
 
+(use-package yasnippet
+  :config
+  (yas-global-mode 1))
+(use-package yasnippet-snippets)
+
 (use-package evil-nerd-commenter)
 
-;; Language modes
+(use-package bufler)
+
 (use-package typescript-mode
   :mode "\\.ts\\'"
   :hook (typescript-mode . lsp-deferred)
@@ -241,15 +390,15 @@
 (use-package rust-mode)
 (use-package cargo-mode)
 (use-package toml-mode)
+(add-hook 'c++-mode-hook 'lsp)
+(add-hook 'c-mode-hook 'lsp)
+
 (use-package tree-sitter
   :config
   (global-tree-sitter-mode))
 (add-hook 'tree-sitter-after-on-hook #'tree-sitter-hl-mode)
 (use-package tree-sitter-langs)
-(add-hook 'c++-mode-hook 'lsp)
-(add-hook 'c-mode-hook 'lsp)
 
-;; Line numbers
 (column-number-mode)
 (setq display-line-numbers-type 'relative)
 (global-display-line-numbers-mode t)
@@ -260,16 +409,3 @@
 	    shell-mode-hook
 	    eshell-mode-hook))
     (add-hook mode (lambda () (display-line-numbers-mode 0))))
-(custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(package-selected-packages
-   '(toml-mode cargo-mode rust-mode graphql-mode ansible fish-mode tree-sitter-langs json-mode go-mode python-mode cmake-mode dockerfile-mode yaml-mode project-tab-groups bufler sideline-blame evil-nerd-commenter lsp-java company-box company typescript-mode centaur-tabs general popper lsp-ui lsp-mode magit rg hydra key-chord evil-collection evil helpful which-key rainbow-delimiters all-the-icons doom-themes doom-modeline consult-project-extra consult-dir consult marginalia orderless vertico use-package)))
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- )
