@@ -124,7 +124,7 @@
       (general-create-definer ew/leader-keys
           :states 'normal
           :keymaps 'override
-          ;; :prefix "SPC"
+          :prefix "SPC"
           :global-prefix "SPC")
       (ew/leader-keys
       "b" '(:ignore t :which-key "Buffers")
