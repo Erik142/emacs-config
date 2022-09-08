@@ -45,6 +45,16 @@ Configuration for automatically closing parentheses, brackets etc.
 (setq use-package-always-ensure t)
 #+end_src
 
+** Keep init.el clean
+#+begin_src emacs-lisp
+(use-package no-littering)
+
+;; no-littering doesn't set this by default so we must place
+;; auto save files in the same path as it uses for sessions
+(setq auto-save-file-name-transforms
+      `((".*" ,(no-littering-expand-var-file-name "auto-save/") t)))
+#+end_src
+
 ** Search completion
 #+begin_src emacs-lisp
 (use-package vertico
