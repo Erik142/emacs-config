@@ -242,6 +242,7 @@ Use j and k to quickly exit from evil insert mode:
         "f" '(:ignore t :which-key "Find")
         "fd" '(consult-dir :which-key "Find directory")
         "fp" '(consult-project-extra-find :which-key "Find all project related entities")
+        "fs" '(consult-line :which-key "Find string in file")
         "g" '(:ignore t :which-key "Git")
         "gg" '(magit-status :which-key "Open magit")
         "e" '(project-dired :which-key "Toggle dired")
