@@ -10,6 +10,16 @@
 
 (electric-pair-mode)
 
+;; Check the system used
+(defconst ON-LINUX   (eq system-type 'gnu/linux))
+(defconst ON-MAC     (eq system-type 'darwin))
+(defconst ON-BSD     (or ON-MAC (eq system-type 'berkeley-unix)))
+(defconst ON-WINDOWS (memq system-type '(cygwin windows-nt ms-dos)))
+
+(defun ew/notes-directory ()
+    (if (not (eq ON-WINDOWS nil))
+        "d:/Filer/Dokument/Anteckningar/Denote/" "~/Denote"))
+
 (require 'package)
 
 (setq package-archives '(("melpa" . "https://melpa.org/packages/")
@@ -34,41 +44,66 @@
       `((".*" ,(no-littering-expand-var-file-name "auto-save/") t)))
 
 (use-package vertico
-  :init
-  (vertico-mode))
-(use-package savehist
-  :init
-  (savehist-mode))
-(use-package orderless
-  :init
-  ;; Configure a custom style dispatcher (see the Consult wiki)
-  ;; (setq orderless-style-dispatchers '(+orderless-dispatch)
-  ;;       orderless-component-separator #'orderless-escapable-split-on-space)
-  (setq completion-styles '(orderless basic)
-        completion-category-defaults nil
-        completion-category-overrides '((file (styles partial-completion)))))
-(use-package marginalia
-  ;; Either bind `marginalia-cycle' globally or only in the minibuffer
-  :bind (("M-A" . marginalia-cycle)
-         :map minibuffer-local-map
-         ("M-A" . marginalia-cycle))
-  :init
-  (marginalia-mode))
-(use-package consult
-  :hook (completion-list-mode . consult-preview-at-point-mode)
-  :init
-  (setq register-preview-delay 0.5
-    register-preview-function #'consult-register-format)
-  (advice-add #'register-preview :override #'consult-register-window)
-  (setq xref-show-xrew-function #'consult-xref
-    xref-show-definitions-function #'consult-xref))
-(use-package consult-dir
-:bind (("C-x C-d" . consult-dir)
-         :map vertico-map
-         ("C-x C-d" . consult-dir)
-         ("C-x C-j" . consult-dir-jump-file)))
-(use-package consult-project-extra
-  :ensure t)
+    :init
+    (vertico-mode))
+  (use-package savehist
+    :init
+    (savehist-mode))
+  (use-package orderless
+    :init
+    ;; Configure a custom style dispatcher (see the Consult wiki)
+    ;; (setq orderless-style-dispatchers '(+orderless-dispatch)
+    ;;       orderless-component-separator #'orderless-escapable-split-on-space)
+    (setq completion-styles '(orderless basic)
+          completion-category-defaults nil
+          completion-category-overrides '((file (styles partial-completion)))))
+  (use-package marginalia
+    ;; Either bind `marginalia-cycle' globally or only in the minibuffer
+    :bind (("M-A" . marginalia-cycle)
+           :map minibuffer-local-map
+           ("M-A" . marginalia-cycle))
+    :init
+    (marginalia-mode))
+  (use-package consult
+    :hook (completion-list-mode . consult-preview-at-point-mode)
+    :init
+    (setq register-preview-delay 0.5
+      register-preview-function #'consult-register-format)
+    (advice-add #'register-preview :override #'consult-register-window)
+    (setq xref-show-xrew-function #'consult-xref
+      xref-show-definitions-function #'consult-xref))
+  (use-package consult-dir
+  :bind (("C-x C-d" . consult-dir)
+           :map vertico-map
+           ("C-x C-d" . consult-dir)
+           ("C-x C-j" . consult-dir-jump-file)))
+  (use-package consult-project-extra
+    :ensure t)
+
+;; Find files with fd instead of find
+(defvar consult--fd-command nil)
+(defun consult--fd-builder (input)
+  (unless consult--fd-command
+    (setq consult--fd-command
+          (if (eq 0 (call-process-shell-command "fdfind"))
+              "fdfind"
+            "fd")))
+  (pcase-let* ((`(,arg . ,opts) (consult--command-split input))
+               (`(,re . ,hl) (funcall consult--regexp-compiler
+                                      arg 'extended t)))
+    (when re
+      (list :command (append
+                      (list consult--fd-command
+                            "--color=never" "--full-path"
+                            (consult--join-regexps re 'extended))
+                      opts)
+            :highlight hl))))
+
+(defun consult-fd (&optional dir initial)
+  (interactive "P")
+  (let* ((prompt-dir (consult--directory-prompt "Fd" dir))
+         (default-directory (cdr prompt-dir)))
+    (find-file (consult--find (car prompt-dir) #'consult--fd-builder initial))))
 
 (use-package doom-modeline
       :ensure t
@@ -141,6 +176,10 @@
       (ew/leader-keys
       "b" '(:ignore t :which-key "Buffers")
       "bs" '(consult-buffer :which-key "Switch buffer")
+      "d" '(:ignore t :which-key "Denote")
+      "dc" '(denote :which-key "Create new note")
+      "df" '((lambda () (interactive)(consult-fd (ew/notes-directory))) :which-key "Find note")
+      "dg" '((lambda () (interactive)(consult-ripgrep (ew/notes-directory))) :which-key "Ripgrep notes")
       "f" '(:ignore t :which-key "Find")
       "fd" '(consult-dir :which-key "Find directory")
       "fp" '(consult-project-extra-find :which-key "Find all project related entities")
@@ -337,6 +376,11 @@
       (org-babel-tangle))))
 
 (add-hook 'org-mode-hook (lambda () (add-hook 'after-save-hook #'ew/org-babel-tangle-config)))
+
+(use-package denote
+:config
+(setq denote-directory (ew/notes-directory))
+(setq denote-known-keywords '(note software hardware config education course investigation journal)))
 
 (defun ew/lsp-mode-setup ()
   (setq lsp-headerline-breadcrumb-segments '(path-up-to-project file symbols))
