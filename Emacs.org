@@ -15,7 +15,7 @@
 
 ** Fonts
 #+begin_src emacs-lisp 
-(set-face-attribute 'default nil :font "FiraCode NF" :height 120)
+(set-face-attribute 'default nil :font "FiraCode NFM" :height 120)
 #+end_src
 
 ** Automatic pairs
@@ -506,6 +506,7 @@ Use j and k to quickly exit from evil insert mode:
     :after org
     :hook (org-mode . org-superstar-mode)
     :custom
+    (org-superstar-leading-bullet "")
     (org-superstar-headline-bullet-list '("◉" "○" "●" "○" "●" "○" "●")))
 #+end_src
 

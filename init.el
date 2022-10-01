@@ -6,7 +6,7 @@
 (menu-bar-mode -1)
 (setq visible-bell nil)
 
-(set-face-attribute 'default nil :font "FiraCode NF" :height 120)
+(set-face-attribute 'default nil :font "FiraCode NFM" :height 120)
 
 (electric-pair-mode)
 
@@ -419,6 +419,7 @@
   :after org
   :hook (org-mode . org-superstar-mode)
   :custom
+  (org-superstar-leading-bullet "")
   (org-superstar-headline-bullet-list '("◉" "○" "●" "○" "●" "○" "●")))
 
 (use-package org-tempo
