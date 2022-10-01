@@ -16,9 +16,12 @@
 (defconst ON-BSD     (or ON-MAC (eq system-type 'berkeley-unix)))
 (defconst ON-WINDOWS (memq system-type '(cygwin windows-nt ms-dos)))
 
+(defconst IS-WORK nil)
+(defconst WORK-NOTES-PATH "")
+(defconst PERSONAL-NOTES-PATH "d:/Filer/Dokument/Anteckningar/Denote/")
 (defun ew/notes-directory ()
     (if (not (eq ON-WINDOWS nil))
-        "d:/Filer/Dokument/Anteckningar/Denote/" "~/Denote"))
+        (if (eq IS-WORK t) WORK-NOTES-PATH PERSONAL-NOTES-PATH) "~/Denote"))
 
 (require 'package)
 

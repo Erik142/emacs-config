@@ -36,9 +36,12 @@ Configuration for automatically closing parentheses, brackets etc.
 
 ** Notes directory
 #+begin_src emacs-lisp
-    (defun ew/notes-directory ()
-        (if (not (eq ON-WINDOWS nil))
-            "d:/Filer/Dokument/Anteckningar/Denote/" "~/Denote"))
+  (defconst IS-WORK nil)
+  (defconst WORK-NOTES-PATH "")
+  (defconst PERSONAL-NOTES-PATH "d:/Filer/Dokument/Anteckningar/Denote/")
+  (defun ew/notes-directory ()
+      (if (not (eq ON-WINDOWS nil))
+          (if (eq IS-WORK t) WORK-NOTES-PATH PERSONAL-NOTES-PATH) "~/Denote"))
 #+end_src
 * Package management
 ** Install use-package
