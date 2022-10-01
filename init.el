@@ -421,11 +421,13 @@
   :custom
   (org-superstar-headline-bullet-list '("◉" "○" "●" "○" "●" "○" "●")))
 
-(require 'org-tempo)
-
-(add-to-list 'org-structure-template-alist '("sh" . "src shell"))
-(add-to-list 'org-structure-template-alist '("el" . "src emacs-lisp"))
-(add-to-list 'org-structure-template-alist '("py" . "src python"))
+(use-package org-tempo
+  :straight (:host github :repo "luotom/org-tempo")
+  :config
+  (setq org-tempo-keywords-prefix "!")
+  (add-to-list 'org-structure-template-alist '("sh" . "src shell"))
+  (add-to-list 'org-structure-template-alist '("el" . "src emacs-lisp"))
+  (add-to-list 'org-structure-template-alist '("py" . "src python")))
 
 ;; Automatically tangle our Emacs.org config file when we save it
 (defun ew/org-babel-tangle-config ()
