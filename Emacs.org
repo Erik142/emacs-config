@@ -533,28 +533,23 @@ Use j and k to quickly exit from evil insert mode:
 #+end_src
 * LSP mode
 #+begin_src emacs-lisp
-      (defun ew/lsp-mode-setup ()
-        (setq lsp-headerline-breadcrumb-segments '(path-up-to-project file symbols))
-        (lsp-headerline-breadcrumb-mode))
+  (defun ew/lsp-mode-setup ()
+    (setq lsp-headerline-breadcrumb-segments '(path-up-to-project file symbols))
+    (lsp-headerline-breadcrumb-mode))
 
-      (defun ew/lsp-mode-hook ()
-        (if (string= major-mode "emacs-lisp-mode")
-            (lsp-mode -1) (lsp-mode 1)))
+  (use-package lsp-mode
+    :commands (lsp lsp-deferred)
+    :hook
+    (lsp-mode . ew/lsp-mode-setup)
+    :init
+    (setq lsp-keymap-prefix "SPC l")  ;; Or 'C-l', 's-l'
+    :config
+    (lsp-enable-which-key-integration t))
 
-      (use-package lsp-mode
-        :commands (lsp lsp-deferred)
-        :hook
-        (lsp-mode . ew/lsp-mode-setup)
-        (prog-mode . ew/lsp-mode-hook)
-        :init
-        (setq lsp-keymap-prefix "SPC i")  ;; Or 'C-l', 's-l'
-        :config
-        (lsp-enable-which-key-integration t))
-
-      (use-package lsp-ui
-        :hook (lsp-mode . lsp-ui-mode)
-        :custom
-        (lsp-ui-doc-position 'bottom))
+  (use-package lsp-ui
+    :hook (lsp-mode . lsp-ui-mode)
+    :custom
+    (lsp-ui-doc-position 'bottom))
 #+end_src
 
 ** LSP UI
@@ -607,26 +602,32 @@ Use j and k to quickly exit from evil insert mode:
 
 * Programming languages
 #+begin_src emacs-lisp
-  (use-package typescript-mode
-    :mode "\\.ts\\'"
-    :hook (typescript-mode . lsp-deferred)
-    :config
-    (setq typescript-indent-level 2))
-  (use-package yaml-mode)
-  (use-package dockerfile-mode)
-  (use-package cmake-mode)
-  (use-package go-mode)
-  (use-package python-mode)
-  (use-package json-mode)
-  (use-package fish-mode)
-  (use-package ansible)
-  (use-package graphql-mode)
-  (use-package rust-mode)
-  (use-package cargo-mode)
-  (use-package toml-mode)
-  (use-package cmake-font-lock)
-  (add-hook 'c++-mode-hook 'lsp)
-  (add-hook 'c-mode-hook 'lsp)
+                (use-package typescript-mode
+                  :mode "\\.ts\\'"
+                  :hook (typescript-mode . lsp-deferred)
+                  :config
+                  (setq typescript-indent-level 2))
+                (use-package yaml-mode
+                  :hook (yaml-mode . lsp-deferred))
+                (use-package dockerfile-mode
+                  :hook (dockerfile-mode . lsp-deferred))
+                (use-package cmake-mode
+                  :hook (cmake-mode . lsp-deferred))
+                (use-package go-mode
+                  :hook (go-mode . lsp-deferred))
+                (use-package python-mode
+                  :hook (python-mode . lsp-deferred))
+                (use-package json-mode
+                  :hook (json-mode . lsp-deferred))
+                (use-package fish-mode)
+                (use-package ansible)
+                (use-package graphql-mode)
+                (use-package rust-mode
+                  :hook (rust-mode . lsp-deferred))
+                (use-package cargo-mode)
+                (use-package toml-mode)
+                (add-hook 'c++-mode-hook 'lsp)
+                (add-hook 'c-mode-hook 'lsp)
 #+end_src
 
 ** Tree sitter
