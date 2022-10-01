@@ -135,6 +135,29 @@ Configuration for automatically closing parentheses, brackets etc.
       (find-file (consult--find (car prompt-dir) #'consult--fd-builder initial))))
 #+end_src
 
+** Embark
+#+begin_src emacs-lisp
+    (use-package embark
+      :bind
+      (("C-." . embark-act)         ;; pick some comfortable binding
+        ("C-;" . embark-dwim)        ;; good alternative: M-.
+        ("C-h B" . embark-bindings)) ;; alternative for `describe-bindings'
+      :config
+
+        ;; Hide the mode line of the Embark live/completions buffers
+        (add-to-list 'display-buffer-alist
+               '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
+                 nil
+                 (window-parameters (mode-line-format . none)))))
+
+    (use-package embark-consult
+      :after (embark consult)
+      :demand t ; only necessary if you have the hook below
+      ;; if you want to have consult previews as you move around an
+      ;; auto-updating embark collect buffer
+      :hook
+      (embark-collect-mode . consult-preview-at-point-mode))
+#+end_src
 ** Themes
 Modeline, themes, icons and rainbow delimiters:
 #+begin_src emacs-lisp
@@ -262,32 +285,34 @@ Use j and k to quickly exit from evil insert mode:
 #+end_src
 
 #+begin_src emacs-lisp
-(general-define-key
- :states 'normal
- :keymaps '(override emacs)
- "C-h" 'windmove-left
- "C-l" 'windmove-right
- "C-j" 'windmove-down
- "C-k" 'windmove-up
- "H" 'tab-next
- "L" 'tab-previous
- "gcc" 'evilnc-comment-or-uncomment-lines)
+  (general-define-key
+   :states 'normal
+   :keymaps '(override emacs)
+   "C-h" 'windmove-left
+   "C-l" 'windmove-right
+   "C-j" 'windmove-down
+   "C-k" 'windmove-up
+   "H" 'tab-next
+   "L" 'tab-previous
+   "gcc" 'evilnc-comment-or-uncomment-lines
+   "C-." 'embark-act)
 #+end_src
 
 
 * Popper minibuffers
 #+begin_src emacs-lisp
-(use-package popper
-  :ensure t ; or :straight t
-  :init
-  (setq popper-reference-buffers
-        '("\\*Messages\\*"
-          "Output\\*$"
-          "\\*Async Shell Command\\*"
-          "\\*lsp-log\\*"
-          "\\*Warnings\\*"))
-  (popper-mode +1)
-  (popper-echo-mode +1))
+  (use-package popper
+    :ensure t ; or :straight t
+    :init
+    (setq popper-reference-buffers
+          '("\\*Messages\\*"
+            "Output\\*$"
+            "\\*Async Shell Command\\*"
+            "\\*lsp-log\\*"
+            "\\*Warnings\\*"
+            "\\*Embark Actions\\*"))
+    (popper-mode +1)
+    (popper-echo-mode +1))
 
 #+end_src
 

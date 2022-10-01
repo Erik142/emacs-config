@@ -105,6 +105,27 @@
          (default-directory (cdr prompt-dir)))
     (find-file (consult--find (car prompt-dir) #'consult--fd-builder initial))))
 
+(use-package embark
+  :bind
+  (("C-." . embark-act)         ;; pick some comfortable binding
+    ("C-;" . embark-dwim)        ;; good alternative: M-.
+    ("C-h B" . embark-bindings)) ;; alternative for `describe-bindings'
+  :config
+
+    ;; Hide the mode line of the Embark live/completions buffers
+    (add-to-list 'display-buffer-alist
+           '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
+             nil
+             (window-parameters (mode-line-format . none)))))
+
+(use-package embark-consult
+  :after (embark consult)
+  :demand t ; only necessary if you have the hook below
+  ;; if you want to have consult previews as you move around an
+  ;; auto-updating embark collect buffer
+  :hook
+  (embark-collect-mode . consult-preview-at-point-mode))
+
 (use-package doom-modeline
       :ensure t
       :init (doom-modeline-mode 1)
@@ -210,7 +231,8 @@
  "C-k" 'windmove-up
  "H" 'tab-next
  "L" 'tab-previous
- "gcc" 'evilnc-comment-or-uncomment-lines)
+ "gcc" 'evilnc-comment-or-uncomment-lines
+ "C-." 'embark-act)
 
 (use-package popper
   :ensure t ; or :straight t
@@ -220,7 +242,8 @@
           "Output\\*$"
           "\\*Async Shell Command\\*"
           "\\*lsp-log\\*"
-          "\\*Warnings\\*"))
+          "\\*Warnings\\*"
+          "\\*Embark Actions\\*"))
   (popper-mode +1)
   (popper-echo-mode +1))
 
