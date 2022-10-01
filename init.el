@@ -232,6 +232,8 @@
   :custom
   (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1))
 
+(defconst notes-regex "__.*todo.*org$")
+
 (defun ew/org-mode-setup ()
   (org-indent-mode)
   (visual-line-mode 1))
@@ -245,10 +247,7 @@
   (setq org-log-done 'time)
   (setq org-log-into-drawer t)
 
-  (setq org-agenda-files
-        '("~/Projects/Code/emacs-from-scratch/OrgFiles/Tasks.org"
-          "~/Projects/Code/emacs-from-scratch/OrgFiles/Habits.org"
-          "~/Projects/Code/emacs-from-scratch/OrgFiles/Birthdays.org"))
+  (setq org-agenda-files (directory-files-recursively (ew/notes-directory) notes-regex))
 
   (require 'org-habit)
   (add-to-list 'org-modules 'org-habit)
@@ -356,6 +355,31 @@
   (define-key global-map (kbd "C-c j")
     (lambda () (interactive) (org-capture nil "jj"))))
 
+(defun ew/get-buffer-file-path ()
+  ""
+  (abbreviate-file-name (expand-file-name (buffer-file-name))))
+
+(defun ew/get-buffer-directory-path ()
+  ""
+  (abbreviate-file-name (expand-file-name (file-name-directory (buffer-file-name)))))
+
+(defun ew/remove-org-agenda-file ()
+    (if (not (eq (memq (ew/get-buffer-file-path) org-agenda-files) nil))
+        (setq org-agenda-files (delete (ew/get-buffer-file-path) org-agenda-files)) ()))
+
+(defun ew/add-org-agenda-files ()
+    (if (eq (memq (ew/get-buffer-file-path) org-agenda-files) nil)
+        (if (not (eq (string-match-p notes-regex (buffer-file-name)) nil))
+            (if (not (eq (string-match-p (ew/notes-directory) (ew/get-buffer-directory-path)) nil))
+             (add-to-list 'org-agenda-files (ew/get-buffer-file-path)) ()) ()) ()))
+
+(defun ew/advice-rename-org-buffer (&rest args)
+  (message "Current buffer file name is %s" (ew/get-buffer-file-path))
+  (ew/remove-org-agenda-file))
+
+(add-hook 'after-save-hook 'ew/add-org-agenda-files)
+(advice-add 'rename-file :before 'ew/advice-rename-org-buffer)
+
 (use-package org-superstar
   :after org
   :hook (org-mode . org-superstar-mode)
@@ -381,7 +405,7 @@
 (use-package denote
 :config
 (setq denote-directory (ew/notes-directory))
-(setq denote-known-keywords '(note software hardware config education course investigation journal)))
+(setq denote-known-keywords '(note software hardware config education course investigation journal todo)))
 
 (defun ew/lsp-mode-setup ()
   (setq lsp-headerline-breadcrumb-segments '(path-up-to-project file symbols))
