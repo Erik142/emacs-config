@@ -382,22 +382,27 @@
     (lambda () (interactive) (org-capture nil "jj"))))
 
 (defun ew/get-buffer-file-path ()
-  ""
-  (abbreviate-file-name (expand-file-name (buffer-file-name))))
+  "Get the file path for the currently opened buffer"
+  (if (memq (buffer-file-name) '(nil ""))
+  "" (abbreviate-file-name (expand-file-name (buffer-file-name)))))
 
 (defun ew/get-buffer-directory-path ()
-  ""
-  (abbreviate-file-name (expand-file-name (file-name-directory (buffer-file-name)))))
+  "Get the directory path for the currently opened buffer"
+  (if (eq (buffer-file-name) '(nil ""))
+  "" (abbreviate-file-name (expand-file-name (file-name-directory (buffer-file-name))))))
 
 (defun ew/remove-org-agenda-file ()
+  "Remove the file corresponding to the currently opened buffer, from the org agenda files"
     (if (not (eq (memq (ew/get-buffer-file-path) org-agenda-files) nil))
         (setq org-agenda-files (delete (ew/get-buffer-file-path) org-agenda-files)) ()))
 
 (defun ew/add-org-agenda-files ()
+  "Add the file corresponding to the currently opened buffer, to the org agenda files"
+    (if (not (memq (buffer-file-name) '(nil "")))
     (if (eq (memq (ew/get-buffer-file-path) org-agenda-files) nil)
         (if (not (eq (string-match-p notes-regex (buffer-file-name)) nil))
             (if (not (eq (string-match-p (ew/notes-directory) (ew/get-buffer-directory-path)) nil))
-             (add-to-list 'org-agenda-files (ew/get-buffer-file-path)) ()) ()) ()))
+             (add-to-list 'org-agenda-files (ew/get-buffer-file-path)) ()) ()) ()) ()))
 
 (defun ew/advice-rename-org-buffer (&rest args)
   (message "Current buffer file name is %s" (ew/get-buffer-file-path))
