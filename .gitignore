@@ -4,6 +4,9 @@ elpa/
 transient/
 var/
 workspace/
+straight/
+server/
+fonts/
 
 .dap-breakpoints
 .lsp-session-v1
