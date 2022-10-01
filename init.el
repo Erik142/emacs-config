@@ -411,9 +411,15 @@
   (setq lsp-headerline-breadcrumb-segments '(path-up-to-project file symbols))
   (lsp-headerline-breadcrumb-mode))
 
+(defun ew/lsp-mode-hook ()
+  (if (string= major-mode "emacs-lisp-mode")
+      (lsp-mode -1) (lsp-mode 1)))
+
 (use-package lsp-mode
   :commands (lsp lsp-deferred)
-  :hook (lsp-mode . ew/lsp-mode-setup)
+  :hook
+  (lsp-mode . ew/lsp-mode-setup)
+  (prog-mode . ew/lsp-mode-hook)
   :init
   (setq lsp-keymap-prefix "SPC i")  ;; Or 'C-l', 's-l'
   :config
@@ -471,6 +477,7 @@
 (use-package rust-mode)
 (use-package cargo-mode)
 (use-package toml-mode)
+(use-package cmake-font-lock)
 (add-hook 'c++-mode-hook 'lsp)
 (add-hook 'c-mode-hook 'lsp)
 
