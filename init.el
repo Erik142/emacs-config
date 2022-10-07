@@ -414,7 +414,7 @@
   (message "Current buffer file name is %s" (ew/get-buffer-file-path))
   (ew/remove-org-agenda-file))
 
-(add-hook 'after-save-hook 'ew/add-org-agenda-files)
+(add-hook 'org-mode-hook (lambda () (add-hook 'after-save-hook 'ew/add-org-agenda-files)))
 (advice-add 'rename-file :before 'ew/advice-rename-org-buffer)
 
 (use-package org-superstar
