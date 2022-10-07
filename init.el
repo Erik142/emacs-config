@@ -219,7 +219,6 @@
       "gg" '(magit-status :which-key "Open magit")
       "e" '(project-dired :which-key "Toggle dired")
       "h" '(help-command :which-key "Help")
-      "l" '(#'lsp-command-map :which-key "Lsp")
       "m" '(:ignore t :which-key "Minibuffers")
       "mm" '(popper-toggle-latest :which-key "Toggle Popper")
       "mc" '(popper-cycle :which-key "Cycle Popper buffers")
@@ -457,7 +456,7 @@
   :hook
   (lsp-mode . ew/lsp-mode-setup)
   :init
-  (setq lsp-keymap-prefix "SPC l")  ;; Or 'C-l', 's-l'
+  (setq lsp-keymap-prefix "C-SPC l")  ;; Or 'C-l', 's-l'
   :config
   (lsp-enable-which-key-integration t))
 
