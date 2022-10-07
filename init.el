@@ -9,7 +9,7 @@
 (set-language-environment "UTF-8")
 (set-default-coding-systems 'utf-8)
 
-(set-face-attribute 'default nil :font "FiraCode NFM" :height 120)
+(set-face-attribute 'default nil :font "FiraCode NF" :height 120)
 
 (electric-pair-mode)
 
