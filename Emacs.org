@@ -474,35 +474,36 @@ Use j and k to quickly exit from evil insert mode:
 
 ** Automatically update Org Agenda files on save
 #+begin_src emacs-lisp
-  (defun ew/get-buffer-file-path ()
-    "Get the file path for the currently opened buffer"
-    (if (memq (buffer-file-name) '(nil ""))
-    "" (abbreviate-file-name (expand-file-name (buffer-file-name)))))
+    (defun ew/get-buffer-file-path ()
+      "Get the file path for the currently opened buffer"
+      (if (memq (buffer-file-name) '(nil ""))
+      "" (abbreviate-file-name (expand-file-name (buffer-file-name)))))
 
-  (defun ew/get-buffer-directory-path ()
-    "Get the directory path for the currently opened buffer"
-    (if (eq (buffer-file-name) '(nil ""))
-    "" (abbreviate-file-name (expand-file-name (file-name-directory (buffer-file-name))))))
+    (defun ew/get-buffer-directory-path ()
+      "Get the directory path for the currently opened buffer"
+      (if (eq (buffer-file-name) '(nil ""))
+      "" (abbreviate-file-name (expand-file-name (file-name-directory (buffer-file-name))))))
 
-  (defun ew/remove-org-agenda-file ()
-    "Remove the file corresponding to the currently opened buffer, from the org agenda files"
-      (if (not (eq (memq (ew/get-buffer-file-path) org-agenda-files) nil))
-          (setq org-agenda-files (delete (ew/get-buffer-file-path) org-agenda-files)) ()))
+    (defun ew/remove-org-agenda-file ()
+      "Remove the file corresponding to the currently opened buffer, from the org agenda files"
+        (if (not (eq org-agenda-files nil))
+        (if (not (eq (memq (ew/get-buffer-file-path) org-agenda-files) nil))
+            (setq org-agenda-files (delete (ew/get-buffer-file-path) org-agenda-files)) ()) ()))
 
-  (defun ew/add-org-agenda-files ()
-    "Add the file corresponding to the currently opened buffer, to the org agenda files"
-      (if (not (memq (buffer-file-name) '(nil "")))
-      (if (eq (memq (ew/get-buffer-file-path) org-agenda-files) nil)
-          (if (not (eq (string-match-p notes-regex (buffer-file-name)) nil))
-              (if (not (eq (string-match-p (ew/notes-directory) (ew/get-buffer-directory-path)) nil))
-               (add-to-list 'org-agenda-files (ew/get-buffer-file-path)) ()) ()) ()) ()))
+    (defun ew/add-org-agenda-files ()
+      "Add the file corresponding to the currently opened buffer, to the org agenda files"
+        (if (not (memq (buffer-file-name) '(nil "")))
+        (if (eq (memq (ew/get-buffer-file-path) org-agenda-files) nil)
+            (if (not (eq (string-match-p notes-regex (buffer-file-name)) nil))
+                (if (not (eq (string-match-p (ew/notes-directory) (ew/get-buffer-directory-path)) nil))
+                 (add-to-list 'org-agenda-files (ew/get-buffer-file-path)) ()) ()) ()) ()))
 
-  (defun ew/advice-rename-org-buffer (&rest args)
-    (message "Current buffer file name is %s" (ew/get-buffer-file-path))
-    (ew/remove-org-agenda-file))
+    (defun ew/advice-rename-org-buffer (&rest args)
+      (message "Current buffer file name is %s" (ew/get-buffer-file-path))
+      (ew/remove-org-agenda-file))
 
-  (add-hook 'org-mode-hook (lambda () (add-hook 'after-save-hook 'ew/add-org-agenda-files)))
-  (advice-add 'rename-file :before 'ew/advice-rename-org-buffer)
+   (add-hook 'org-mode-hook (lambda () (add-hook 'after-save-hook 'ew/add-org-agenda-files)))
+   (advice-add 'rename-file :before 'ew/advice-rename-org-buffer)
 #+end_src
 
 ** Better bullets
