@@ -160,7 +160,6 @@
 	    :custom ((doom-modeline-height 30)))
     (use-package doom-themes)
 
-    (load-theme 'doom-gruvbox t)
 
     (use-package all-the-icons
       :if (display-graphic-p)
@@ -168,7 +167,7 @@
     (use-package rainbow-delimiters
 	:hook (prog-mode . rainbow-delimiters-mode))
 
-(load-theme 'doom-gruvbox t)
+(load-theme 'doom-oceanic-next t)
 
 (use-package which-key
     :init (which-key-mode)
