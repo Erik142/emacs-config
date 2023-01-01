@@ -326,7 +326,8 @@ Use j and k to quickly exit from evil insert mode:
         "Si" '(yas-insert-snippet :which-key "Insert snippet")
         "s" '(:ignore t :which-key "Splits")
         "sv" '(split-window-right :which-key "Split vertically")
-        "sh" '(split-window-below :which-key "Split horizontally")))
+        "sh" '(split-window-below :which-key "Split horizontally")
+        "t" '(vterm :which-key "Open new terminal")))
 #+end_src
 
 #+begin_src emacs-lisp
@@ -687,4 +688,10 @@ Use j and k to quickly exit from evil insert mode:
 	    shell-mode-hook
 	    eshell-mode-hook))
     (add-hook mode (lambda () (display-line-numbers-mode 0))))
+#+end_src
+
+* Terminal emulator
+
+#+begin_src emacs-lisp
+(use-package vterm)
 #+end_src

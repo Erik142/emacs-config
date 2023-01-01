@@ -256,7 +256,8 @@
       "Si" '(yas-insert-snippet :which-key "Insert snippet")
       "s" '(:ignore t :which-key "Splits")
       "sv" '(split-window-right :which-key "Split vertically")
-      "sh" '(split-window-below :which-key "Split horizontally")))
+      "sh" '(split-window-below :which-key "Split horizontally")
+      "t" '(vterm :which-key "Open new terminal")))
 
 (general-define-key
  :states 'normal
@@ -553,3 +554,5 @@
 	    shell-mode-hook
 	    eshell-mode-hook))
     (add-hook mode (lambda () (display-line-numbers-mode 0))))
+
+(use-package vterm)
