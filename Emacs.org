@@ -21,7 +21,9 @@
 
 ** Fonts
 #+begin_src emacs-lisp 
-(set-face-attribute 'default nil :font "FiraCode NF" :height 120)
+  (if (not (eq ON-MAC nil))
+    (set-face-attribute 'default nil :font "FiraCode NF" :height 140)
+    (set-face-attribute 'default nil :font "FiraCode NF" :height 120))
 #+end_src
 
 ** Automatic pairs
