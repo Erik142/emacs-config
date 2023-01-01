@@ -9,10 +9,6 @@
 (set-language-environment "UTF-8")
 (set-default-coding-systems 'utf-8)
 
-(if (not (eq ON-MAC nil))
-  (set-face-attribute 'default nil :font "FiraCode NF" :height 140)
-  (set-face-attribute 'default nil :font "FiraCode NF" :height 120))
-
 (electric-pair-mode)
 
 ;; Check the system used
@@ -20,6 +16,10 @@
 (defconst ON-MAC     (eq system-type 'darwin))
 (defconst ON-BSD     (or ON-MAC (eq system-type 'berkeley-unix)))
 (defconst ON-WINDOWS (memq system-type '(cygwin windows-nt ms-dos)))
+
+(if (not (eq ON-MAC nil))
+  (set-face-attribute 'default nil :font "FiraCode NF" :height 140)
+  (set-face-attribute 'default nil :font "FiraCode NF" :height 120))
 
 (defconst IS-WORK nil)
 (defconst WORK-NOTES-PATH "")
