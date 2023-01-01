@@ -44,10 +44,17 @@ Configuration for automatically closing parentheses, brackets etc.
 #+begin_src emacs-lisp
   (defconst IS-WORK nil)
   (defconst WORK-NOTES-PATH "")
-  (defconst PERSONAL-NOTES-PATH "d:/Filer/Dokument/Anteckningar/Denote/")
+  (defconst PERSONAL-NOTES-PATH-WINDOWS "d:/Filer/Dokument/Anteckningar/Denote/")
+  (defconst PERSONAL-JOURNAL-PATH-WINDOWS "d:/Filer/Dokument/Anteckningar/Denote/Journal")
+  (defconst PERSONAL-NOTES-PATH-UNIX "~/Documents/Denote")
+  (defconst PERSONAL-JOURNAL-PATH-UNIX "~/Documents/Denote/Journal")
   (defun ew/notes-directory ()
       (if (not (eq ON-WINDOWS nil))
-          (if (eq IS-WORK t) WORK-NOTES-PATH PERSONAL-NOTES-PATH) "~/Denote"))
+          (if (eq IS-WORK t) WORK-NOTES-PATH PERSONAL-NOTES-PATH-WINDOWS) PERSONAL-NOTES-PATH-UNIX))
+  (defun ew/journal-directory ()
+      (if (not (eq ON-WINDOWS nil))
+          (if (eq IS-WORK t) WORK-NOTES-PATH PERSONAL-JOURNAL-PATH-WINDOWS) PERSONAL-JOURNAL-PATH-UNIX))
+#+end_src
 #+end_src
 * Package management
 ** Install straight.el and use-package
@@ -272,7 +279,9 @@ Use j and k to quickly exit from evil insert mode:
         "b" '(:ignore t :which-key "Buffers")
         "bs" '(consult-buffer :which-key "Switch buffer")
         "d" '(:ignore t :which-key "Denote")
-        "dc" '(denote :which-key "Create new note")
+        "dc" '(:ignore :which-key "Create new")
+        "dcn" '(denote :which-key "Create new note")
+        "dcj" '((lambda () (interactive)(ew/denote-journal)) :which-key "Create new journal entry")
         "df" '((lambda () (interactive)(consult-fd (ew/notes-directory))) :which-key "Find note")
         "dg" '((lambda () (interactive)(consult-ripgrep (ew/notes-directory))) :which-key "Ripgrep notes")
         "f" '(:ignore t :which-key "Find")
@@ -548,7 +557,14 @@ Use j and k to quickly exit from evil insert mode:
   (use-package denote
   :config
   (setq denote-directory (ew/notes-directory))
+  (setq denote-templates
+        '((journal . "* Vad gjorde jag igår?\n\n\n* Vad ska jag göra idag?\n\n\n* Finns det något som blockerar?\n")))
   (setq denote-known-keywords '(note software hardware config education course investigation journal todo)))
+
+  (defun ew/denote-journal ()
+    (setq-local denote-directory (ew/journal-directory))
+    (denote "Standup" '("journal") "org" "" "" 'journal)
+    )
 #+end_src
 * LSP mode
 #+begin_src emacs-lisp
