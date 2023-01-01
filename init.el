@@ -236,6 +236,7 @@
       "fs" '(consult-line :which-key "Find string in file")
       "g" '(:ignore t :which-key "Git")
       "gg" '(magit-status :which-key "Open magit")
+      "gb" '(vc-msg-show :which-key "Git Blame")
       "e" '(project-dired :which-key "Toggle dired")
       "h" '(help-command :which-key "Help")
       "l" '(:ignore t :which-key "Lsp")
@@ -617,3 +618,5 @@
   '((tab-mark 9 [124 9] [92 9]))) ; 124 is the ascii ID for '\|'
 (global-whitespace-mode) ; Enable whitespace mode everywhere
 ; END TABS CONFIG
+
+(use-package vc-msg)
