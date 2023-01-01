@@ -9,7 +9,9 @@
 (set-language-environment "UTF-8")
 (set-default-coding-systems 'utf-8)
 
-(set-face-attribute 'default nil :font "FiraCode NF" :height 120)
+(if (not (eq ON-MAC nil))
+  (set-face-attribute 'default nil :font "FiraCode NF" :height 140)
+  (set-face-attribute 'default nil :font "FiraCode NF" :height 120))
 
 (electric-pair-mode)
 
@@ -21,10 +23,21 @@
 
 (defconst IS-WORK nil)
 (defconst WORK-NOTES-PATH "")
-(defconst PERSONAL-NOTES-PATH "d:/Filer/Dokument/Anteckningar/Denote/")
+(defconst PERSONAL-NOTES-PATH-WINDOWS "d:/Filer/Dokument/Anteckningar/Denote/")
+(defconst PERSONAL-JOURNAL-PATH-WINDOWS "d:/Filer/Dokument/Anteckningar/Denote/Journal")
+(defconst PERSONAL-NOTES-PATH-UNIX "~/Documents/Denote")
+(defconst PERSONAL-JOURNAL-PATH-UNIX "~/Documents/Denote/Journal")
 (defun ew/notes-directory ()
     (if (not (eq ON-WINDOWS nil))
-        (if (eq IS-WORK t) WORK-NOTES-PATH PERSONAL-NOTES-PATH) "~/Denote"))
+        (if (eq IS-WORK t) WORK-NOTES-PATH PERSONAL-NOTES-PATH-WINDOWS) PERSONAL-NOTES-PATH-UNIX))
+(defun ew/journal-directory ()
+    (if (not (eq ON-WINDOWS nil))
+        (if (eq IS-WORK t) WORK-NOTES-PATH PERSONAL-JOURNAL-PATH-WINDOWS) PERSONAL-JOURNAL-PATH-UNIX))
+
+(setq mac-option-key-is-meta nil)
+(setq mac-command-key-is-meta t)
+(setq mac-command-modifier 'meta)
+(setq mac-option-modifier nil)
 
 ;; (require 'package)
 
@@ -45,6 +58,11 @@
     (load bootstrap-file nil 'nomessage))
 (straight-use-package 'use-package)
 (setq straight-use-package-by-default t)
+
+(if (eq ON-WINDOWS nil)
+(use-package exec-path-from-shell
+  :config
+  (exec-path-from-shell-initialize))())
 
 (use-package no-littering)
 
@@ -208,7 +226,9 @@
       "b" '(:ignore t :which-key "Buffers")
       "bs" '(consult-buffer :which-key "Switch buffer")
       "d" '(:ignore t :which-key "Denote")
-      "dc" '(denote :which-key "Create new note")
+      "dc" '(:ignore :which-key "Create new")
+      "dcn" '(denote :which-key "Create new note")
+      "dcj" '((lambda () (interactive)(ew/denote-journal)) :which-key "Create new journal entry")
       "df" '((lambda () (interactive)(consult-fd (ew/notes-directory))) :which-key "Find note")
       "dg" '((lambda () (interactive)(consult-ripgrep (ew/notes-directory))) :which-key "Ripgrep notes")
       "f" '(:ignore t :which-key "Find")
@@ -446,7 +466,14 @@
 (use-package denote
 :config
 (setq denote-directory (ew/notes-directory))
+(setq denote-templates
+      '((journal . "* Vad gjorde jag igår?\n\n\n* Vad ska jag göra idag?\n\n\n* Finns det något som blockerar?\n")))
 (setq denote-known-keywords '(note software hardware config education course investigation journal todo)))
+
+(defun ew/denote-journal ()
+  (setq-local denote-directory (ew/journal-directory))
+  (denote "Standup" '("journal") "org" "" "" 'journal)
+  )
 
 (defun ew/lsp-mode-setup ()
   (setq lsp-headerline-breadcrumb-segments '(path-up-to-project file symbols))
