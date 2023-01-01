@@ -239,6 +239,14 @@
       "gg" '(magit-status :which-key "Open magit")
       "e" '(project-dired :which-key "Toggle dired")
       "h" '(help-command :which-key "Help")
+      "l" '(:ignore t :which-key "Lsp")
+      "lca" '(eglot-code-actions :which-key "Code Actions")
+      "ld" '(eglot-find-declaration :which-key "Find Declaration")
+      "lD" '(consult-flymake :which-key "Flymake Diagnostics")
+      "lf" '(eglot-format-buffer :which-key "Format Buffer")
+      "li" '(eglot-find-implementation :which-key "Find implementation")
+      "lr" '(xref-find-references :which-key "Find References")
+      "lt" '(eglot-find-typeDefinition :which-key "Find Type Definition")
       "m" '(:ignore t :which-key "Minibuffers")
       "mm" '(popper-toggle-latest :which-key "Toggle Popper")
       "mc" '(popper-cycle :which-key "Cycle Popper buffers")
@@ -264,17 +272,18 @@
  "C-." 'embark-act)
 
 (use-package popper
-  :ensure t ; or :straight t
-  :init
-  (setq popper-reference-buffers
+    :ensure t ; or :straight t
+    :init
+    (setq popper-reference-buffers
         '("\\*Messages\\*"
-          "Output\\*$"
-          "\\*Async Shell Command\\*"
-          "\\*lsp-log\\*"
-          "\\*Warnings\\*"
-          "\\*Embark Actions\\*"))
-  (popper-mode +1)
-  (popper-echo-mode +1))
+            "Output\\*$"
+            "\\*Async Shell Command\\*"
+            "\\*lsp-log\\*"
+            "\\*Warnings\\*"
+            "\\*Embark Actions\\*"
+            "\\*xref\\*"))
+    (popper-mode +1)
+    (popper-echo-mode +1))
 
 (use-package hydra)
 
@@ -475,32 +484,11 @@
   (denote "Standup" '("journal") "org" "" "" 'journal)
   )
 
-(defun ew/lsp-mode-setup ()
-  (setq lsp-headerline-breadcrumb-segments '(path-up-to-project file symbols))
-  (lsp-headerline-breadcrumb-mode))
-
-(use-package lsp-mode
-  :commands (lsp lsp-deferred)
-  :hook
-  (lsp-mode . ew/lsp-mode-setup)
-  :init
-  (setq lsp-keymap-prefix "C-SPC l")  ;; Or 'C-l', 's-l'
-  :config
-  (lsp-enable-which-key-integration t))
-
-(use-package lsp-ui
-  :hook (lsp-mode . lsp-ui-mode)
-  :custom
-  (lsp-ui-doc-position 'bottom))
-
-(use-package lsp-ui
-  :hook (lsp-mode . lsp-ui-mode)
-  :custom
-  (lsp-ui-doc-position 'bottom))
+(use-package eglot)
 
 (use-package company
-  :after lsp-mode
-  :hook (lsp-mode . company-mode)
+  :after eglot
+  :hook (eglot-managed-mode . company-mode)
   :bind (:map company-active-map
          ("<tab>" . company-complete-selection))
         (:map lsp-mode-map
@@ -525,30 +513,30 @@
 
 (use-package typescript-mode
   :mode "\\.ts\\'"
-  :hook (typescript-mode . lsp-deferred)
+  :hook (typescript-mode . eglot-ensure)
   :config
   (setq typescript-indent-level 2))
 (use-package yaml-mode
-  :hook (yaml-mode . lsp-deferred))
+  :hook (yaml-mode . eglot-ensure))
 (use-package dockerfile-mode
-  :hook (dockerfile-mode . lsp-deferred))
+  :hook (dockerfile-mode . eglot-ensure))
 (use-package cmake-mode
-  :hook (cmake-mode . lsp-deferred))
+  :hook (cmake-mode . eglot-ensure))
 (use-package go-mode
-  :hook (go-mode . lsp-deferred))
+  :hook (go-mode . eglot-ensure))
 (use-package python-mode
-  :hook (python-mode . lsp-deferred))
+  :hook (python-mode . eglot-ensure))
 (use-package json-mode
-  :hook (json-mode . lsp-deferred))
+  :hook (json-mode . eglot-ensure))
 (use-package fish-mode)
 (use-package ansible)
 (use-package graphql-mode)
 (use-package rust-mode
-  :hook (rust-mode . lsp-deferred))
+  :hook (rust-mode . eglot-ensure))
 (use-package cargo-mode)
 (use-package toml-mode)
-(add-hook 'c++-mode-hook 'lsp)
-(add-hook 'c-mode-hook 'lsp)
+(add-hook 'c++-mode-hook 'eglot-ensure)
+(add-hook 'c-mode-hook 'eglot-ensure)
 
 (use-package tree-sitter
   :config
