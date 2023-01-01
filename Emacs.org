@@ -87,6 +87,14 @@ Configuration for automatically closing parentheses, brackets etc.
   (setq straight-use-package-by-default t)
   #+end_src
 
+** Set PATH on Mac OS
+#+begin_src emacs-lisp
+  (if (eq ON-WINDOWS nil)
+  (use-package exec-path-from-shell
+    :config
+    (exec-path-from-shell-initialize))())
+#+end_src
+
 ** Keep init.el clean
 #+begin_src emacs-lisp
 (use-package no-littering)
