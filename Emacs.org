@@ -301,6 +301,7 @@ Use j and k to quickly exit from evil insert mode:
         "dcj" '((lambda () (interactive)(ew/denote-journal)) :which-key "Create new journal entry")
         "df" '((lambda () (interactive)(consult-fd (ew/notes-directory))) :which-key "Find note")
         "dg" '((lambda () (interactive)(consult-ripgrep (ew/notes-directory))) :which-key "Ripgrep notes")
+        "E" '(embark-act :which-key "Embark")
         "f" '(:ignore t :which-key "Find")
         "fd" '(consult-dir :which-key "Find directory")
         "fp" '(consult-project-extra-find :which-key "Find all project related entities")
